@@ -40,5 +40,7 @@ jobs:
           file: ./mongo-tool/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILDKIT_MULTI_PLATFORM=1
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mongo-tool:buildcache-dev
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mongo-tool:buildcache-dev,mode=max

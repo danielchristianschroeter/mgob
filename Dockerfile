@@ -11,9 +11,9 @@ ARG EN_MINIO=false
 ARG EN_RCLONE=false
 ARG VERSION
 
-FROM maxisam/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
+FROM --platform=$BUILDPLATFORM maxisam/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
 
-FROM golang:1.21 AS mgob-builder
+FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
 ARG VERSION
 COPY . /go/src/github.com/stefanprodan/mgob
 WORKDIR /go/src/github.com/stefanprodan/mgob
@@ -58,13 +58,13 @@ COPY --from=tools-builder /go/mongo-tools/bin/* /usr/bin/
 VOLUME ["/storage", "/tmp", "/data"]
 
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="mgob" \
-      org.label-schema.description="MongoDB backup automation tool" \
-      org.label-schema.url="https://github.com/stefanprodan/mgob" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/stefanprodan/mgob" \
-      org.label-schema.vendor="stefanprodan.com,maxisam" \
-      org.label-schema.version=$VERSION \
-      org.label-schema.schema-version="1.0"
+    org.label-schema.name="mgob" \
+    org.label-schema.description="MongoDB backup automation tool" \
+    org.label-schema.url="https://github.com/stefanprodan/mgob" \
+    org.label-schema.vcs-ref=$VCS_REF \
+    org.label-schema.vcs-url="https://github.com/stefanprodan/mgob" \
+    org.label-schema.vendor="stefanprodan.com,maxisam" \
+    org.label-schema.version=$VERSION \
+    org.label-schema.schema-version="1.0"
 
 ENTRYPOINT [ "./mgob" ]

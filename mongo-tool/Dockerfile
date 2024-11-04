@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine3.18 AS mongo-tools-builder
+FROM --platform=$BUILDPLATFORM golang:1.21-alpine3.18 AS mongo-tools-builder
 
 ARG MONGODB_TOOLS_VERSION=100.8.0
 

@@ -59,7 +59,7 @@ jobs:
           labels: ${{ needs.set-build-env.outputs.buildId }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            danielschroeter:${{ needs.set-build-env.outputs.buildId }}-${{ matrix.feature }}
+            danielschroeter/mgob:${{ needs.set-build-env.outputs.buildId }}-${{ matrix.feature }}
           platforms: linux/amd64,linux/arm64
           build-args: |
             BUILDKIT_MULTI_PLATFORM=1
@@ -94,9 +94,9 @@ jobs:
           labels: ${{ needs.set-build-env.outputs.buildId }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            danielschroeter:${{ needs.set-build-env.outputs.buildId }}-all
-            danielschroeter:${{ needs.set-build-env.outputs.buildId }}
-            danielschroeter:latest
+            danielschroeter/mgob:${{ needs.set-build-env.outputs.buildId }}-all
+            danielschroeter/mgob:${{ needs.set-build-env.outputs.buildId }}
+            danielschroeter/mgob:latest
           platforms: linux/amd64,linux/arm64
           build-args: |
             BUILDKIT_MULTI_PLATFORM=1

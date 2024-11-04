@@ -82,7 +82,7 @@ jobs:
             EN_MINIO=true
             EN_RCLONE=true
             EN_GPG=true
-          tags: danielschroeter:${{ env.APP_VERSION }}.${{ github.run_number }}
+          tags: danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
           push: false
           load: true
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev
@@ -102,7 +102,7 @@ jobs:
             EN_MINIO=true
             EN_RCLONE=true
             EN_GPG=true
-          tags: danielschroeter:${{ env.APP_VERSION }}.${{ github.run_number }}
+          tags: danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
           push: false
           load: true
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev
@@ -131,7 +131,7 @@ jobs:
           -e MONGO_TEST__AZURE_CONNECTIONSTRING="$AZURE_CONNECTIONSTRING" \
           -v ${{ github.workspace }}/test/gh-actions:/config \
           -v ${{ github.workspace }}/test/backups:/storage \
-          danielschroeter:${{ env.APP_VERSION }}.${{ github.run_number }}
+          danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
 
       - name: Verify mgob backup for PR
         run: |
@@ -257,7 +257,7 @@ jobs:
             EN_MINIO=true
             EN_RCLONE=true
             EN_GPG=true
-          tags: danielschroeter:${{ env.APP_VERSION }}.${{ github.run_number }}
+          tags: danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
           push: true
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev,mode=max

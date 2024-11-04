@@ -20,7 +20,7 @@ WORKDIR /go/src/github.com/stefanprodan/mgob
 RUN CGO_ENABLED=0 GOOS=linux go test ./pkg/... && \
     CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
-FROM alpine:3.18
+FROM --platform=$BUILDPLATFORM alpine:3.18
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION

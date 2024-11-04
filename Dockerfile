@@ -11,7 +11,7 @@ ARG EN_MINIO=false
 ARG EN_RCLONE=false
 ARG VERSION
 
-FROM --platform=$BUILDPLATFORM maxisam/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
+FROM --platform=$BUILDPLATFORM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
 
 FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
 ARG VERSION

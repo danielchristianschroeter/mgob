@@ -36,7 +36,7 @@ jobs:
       - name: Build Mongo Tool image
         uses: docker/build-push-action@v6
         with:
-          tags: maxisam/mongo-tool:${{ env.VERSION }}
+          tags: danielschroeter/mongo-tool:${{ env.VERSION }}
           file: ./mongo-tool/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64

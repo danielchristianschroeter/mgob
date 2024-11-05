@@ -10,7 +10,19 @@ ARG TARGETARCH
 
 # Install dependencies for building MongoDB tools and Go
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git build-essential libkrb5-dev golang-go ca-certificates && \
+    apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    libkrb5-dev \
+    golang-go \
+    ca-certificates \
+    libc6 \
+    libgssapi-krb5-2 \
+    libkrb5-3 \
+    libk5crypto3 \
+    libcomerr2 \
+    libkrb5support0 \
+    libkeyutils1 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

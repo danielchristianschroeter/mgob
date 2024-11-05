@@ -1,5 +1,5 @@
 # Use an Ubuntu base image with a specified platform
-FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS mongo-tools-builder
+FROM ubuntu:22.04 AS mongo-tools-builder
 
 # Set the MongoDB tools version as a build argument
 ARG MONGODB_TOOLS_VERSION=100.8.0

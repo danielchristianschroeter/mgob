@@ -12,10 +12,10 @@ ARG EN_RCLONE=false
 ARG VERSION
 
 # Stage 1: tools-builder stage for MongoDB tools
-FROM --platform=$BUILDPLATFORM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
+FROM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
 
 # Stage 2: mgob-builder stage for the mgob binary
-FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
+FROM golang:1.21 AS mgob-builder
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
@@ -25,7 +25,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test ./pkg/... && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
 # Stage 3: final image setup with Alpine
-FROM --platform=$BUILDPLATFORM alpine:3.18
+FROM alpine:3.20
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
@@ -65,7 +65,7 @@ ENV PATH="/google-cloud-sdk/bin:${PATH}"
 COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob .
 
 # Copy MongoDB tools from the correct path
-COPY --from=tools-builder /usr/bin/* /usr/bin/
+COPY --from=tools-builder /usr/local/bin/* /usr/bin/
 
 # Volumes for storage
 VOLUME ["/storage", "/tmp", "/data"]

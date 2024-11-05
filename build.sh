@@ -33,6 +33,9 @@ fi
 
 cd /tmp
 
+# Ensure Python and pip are installed before running pip-specific commands
+apk add --no-cache python3 py3-pip
+
 # Install MinIO client if enabled
 install_minio() {
   echo "Installing MinIO Client..."

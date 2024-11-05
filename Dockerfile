@@ -1,3 +1,4 @@
+# Define build arguments with default values
 ARG MONGODB_TOOLS_VERSION=100.8.0
 ARG EN_AWS_CLI=false
 ARG AWS_CLI_VERSION=1.29.44
@@ -15,17 +16,30 @@ ARG VERSION
 FROM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
 
 # Stage 2: mgob-builder stage for the mgob binary
-FROM golang:1.21 AS mgob-builder
+FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
 ARG VERSION
 ARG TARGETOS
 ARG TARGETARCH
-COPY . /go/src/github.com/stefanprodan/mgob
+
+# Set environment variables for Go
+ENV GOOS=${TARGETOS} \
+    GOARCH=${TARGETARCH} \
+    CGO_ENABLED=0
+
+# Set working directory
 WORKDIR /go/src/github.com/stefanprodan/mgob
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test ./pkg/... && \
-    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
+
+# Copy source code
+COPY . .
+
+# Build and test the mgob binary
+RUN go test ./pkg/... && \
+    go build -ldflags "-X main.version=$VERSION" -o mgob ./cmd/mgob
 
 # Stage 3: final image setup with Alpine
 FROM alpine:3.20
+
+# Define build arguments
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
@@ -40,45 +54,53 @@ ARG EN_GCLOUD
 ARG EN_GPG
 ARG EN_MINIO
 ARG EN_RCLONE
-ENV MONGODB_TOOLS_VERSION=$MONGODB_TOOLS_VERSION \
-    GNUPG_VERSION=$GNUPG_VERSION \
-    GOOGLE_CLOUD_SDK_VERSION=$GOOGLE_CLOUD_SDK_VERSION \
-    AZURE_CLI_VERSION=$AZURE_CLI_VERSION \
-    AWS_CLI_VERSION=$AWS_CLI_VERSION \
-    MGOB_EN_AWS_CLI=$EN_AWS_CLI \
-    MGOB_EN_AZURE=$EN_AZURE \
-    MGOB_EN_GCLOUD=$EN_GCLOUD \
-    MGOB_EN_GPG=$EN_GPG \
-    MGOB_EN_MINIO=$EN_MINIO \
-    MGOB_EN_RCLONE=$EN_RCLONE
 
+# Set environment variables
+ENV MONGODB_TOOLS_VERSION=${MONGODB_TOOLS_VERSION} \
+    GNUPG_VERSION=${GNUPG_VERSION} \
+    GOOGLE_CLOUD_SDK_VERSION=${GOOGLE_CLOUD_SDK_VERSION} \
+    AZURE_CLI_VERSION=${AZURE_CLI_VERSION} \
+    AWS_CLI_VERSION=${AWS_CLI_VERSION} \
+    MGOB_EN_AWS_CLI=${EN_AWS_CLI} \
+    MGOB_EN_AZURE=${EN_AZURE} \
+    MGOB_EN_GCLOUD=${EN_GCLOUD} \
+    MGOB_EN_GPG=${EN_GPG} \
+    MGOB_EN_MINIO=${EN_MINIO} \
+    MGOB_EN_RCLONE=${EN_RCLONE}
+
+# Set working directory
 WORKDIR /
 
 # Copy and run the build script
-COPY build.sh /tmp
-RUN /tmp/build.sh
+COPY build.sh /tmp/
+RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
 
-# Set the PATH for Google Cloud SDK
-ENV PATH="/google-cloud-sdk/bin:${PATH}"
+# Set the PATH for Google Cloud SDK if enabled
+RUN if [ "${MGOB_EN_GCLOUD}" = "true" ]; then \
+    echo 'export PATH="/google-cloud-sdk/bin:$PATH"' >> /etc/profile.d/gcloud.sh; \
+    fi
 
-# Copy the mgob binary
-COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob .
+# Copy the mgob binary from the builder
+COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob /usr/local/bin/
 
-# Copy MongoDB tools from the correct path
-COPY --from=tools-builder /usr/local/bin/* /usr/bin/
+# Copy MongoDB tools from the tools-builder
+COPY --from=tools-builder /usr/local/bin/ /usr/bin/
+
+# Install necessary runtime dependencies for MongoDB tools
+RUN apk add --no-cache krb5-libs
 
 # Volumes for storage
 VOLUME ["/storage", "/tmp", "/data"]
 
 # Labels for image metadata
-LABEL org.label-schema.build-date=$BUILD_DATE \
+LABEL org.label-schema.build-date=${BUILD_DATE} \
     org.label-schema.name="mgob" \
     org.label-schema.description="MongoDB backup automation tool" \
     org.label-schema.url="https://github.com/stefanprodan/mgob" \
-    org.label-schema.vcs-ref=$VCS_REF \
+    org.label-schema.vcs-ref=${VCS_REF} \
     org.label-schema.vcs-url="https://github.com/stefanprodan/mgob" \
     org.label-schema.vendor="stefanprodan.com,maxisam" \
-    org.label-schema.version=$VERSION \
+    org.label-schema.version=${VERSION} \
     org.label-schema.schema-version="1.0"
 
 # Entry point for the mgob application

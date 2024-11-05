@@ -4,9 +4,9 @@ ARG MONGODB_TOOLS_VERSION=100.8.0
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN apk add --no-cache git build-base krb5-dev krb5-pkinit krb5 && \
+RUN apk add --no-cache git build-base krb5-dev && \
     git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_TOOLS_VERSION
 
 WORKDIR /go/mongo-tools
 
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH ./make build
+RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH ./make build

@@ -28,8 +28,21 @@ RUN git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_T
 # Set the working directory
 WORKDIR /go/mongo-tools
 
-# Build MongoDB tools
-RUN go run build.go build && \
+# Conditionally build MongoDB tools based on architecture
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+    TOOLS="bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop"; \
+    for tool in $TOOLS; do \
+    go build -o bin/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl gssapi failpoints" $tool/main/$tool.go; \
+    done; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+    TOOLS="bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop"; \
+    for tool in $TOOLS; do \
+    go build -o bin/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl failpoints" $tool/main/$tool.go; \
+    done; \
+    else \
+    echo "Unsupported architecture: $TARGETARCH"; \
+    exit 1; \
+    fi && \
     apt-get remove -y golang-go git build-essential && \
     apt-get autoremove -y && \
     rm -rf /go/pkg /var/lib/apt/lists/*

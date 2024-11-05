@@ -6,7 +6,7 @@ ARG MONGODB_TOOLS_VERSION=100.8.0
 
 # Install dependencies for building MongoDB tools and Go
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git build-essential krb5-dev golang-go && \
+    apt-get install -y --no-install-recommends git build-essential libkrb5-dev golang-go && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 

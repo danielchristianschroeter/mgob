@@ -1,8 +1,12 @@
 # Use an Ubuntu base image with a specified platform
-FROM ubuntu:22.04 AS mongo-tools-builder
+FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS mongo-tools-builder
 
 # Set the MongoDB tools version as a build argument
 ARG MONGODB_TOOLS_VERSION=100.8.0
+
+# Set build architecture and OS
+ARG TARGETOS
+ARG TARGETARCH
 
 # Install dependencies for building MongoDB tools and Go
 RUN apt-get update && \
@@ -21,4 +25,4 @@ RUN git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_T
 WORKDIR /go/mongo-tools
 
 # Build MongoDB tools
-RUN ./make build
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go run build.go

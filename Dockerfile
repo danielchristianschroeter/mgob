@@ -11,8 +11,10 @@ ARG EN_MINIO=false
 ARG EN_RCLONE=false
 ARG VERSION
 
+# Stage 1: tools-builder stage for MongoDB tools
 FROM --platform=$BUILDPLATFORM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSION} AS tools-builder
 
+# Stage 2: mgob-builder stage for the mgob binary
 FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
 ARG VERSION
 ARG TARGETOS
@@ -22,6 +24,7 @@ WORKDIR /go/src/github.com/stefanprodan/mgob
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test ./pkg/... && \
     CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
+# Stage 3: final image setup with Alpine
 FROM --platform=$BUILDPLATFORM alpine:3.18
 ARG BUILD_DATE
 ARG VCS_REF
@@ -51,14 +54,23 @@ ENV MONGODB_TOOLS_VERSION=$MONGODB_TOOLS_VERSION \
 
 WORKDIR /
 
+# Copy and run the build script
 COPY build.sh /tmp
 RUN /tmp/build.sh
-ENV PATH="/google-cloud-sdk/bin:${PATH}"
-COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob .
-COPY --from=tools-builder /go/mongo-tools/bin/* /usr/bin/
 
+# Set the PATH for Google Cloud SDK
+ENV PATH="/google-cloud-sdk/bin:${PATH}"
+
+# Copy the mgob binary
+COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob .
+
+# Copy MongoDB tools from the correct path
+COPY --from=tools-builder /usr/bin/* /usr/bin/
+
+# Volumes for storage
 VOLUME ["/storage", "/tmp", "/data"]
 
+# Labels for image metadata
 LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.name="mgob" \
     org.label-schema.description="MongoDB backup automation tool" \
@@ -69,4 +81,5 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
     org.label-schema.version=$VERSION \
     org.label-schema.schema-version="1.0"
 
+# Entry point for the mgob application
 ENTRYPOINT [ "./mgob" ]

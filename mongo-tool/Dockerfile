@@ -37,4 +37,11 @@ RUN git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_T
 WORKDIR /go/mongo-tools
 
 # Build MongoDB tools
-RUN CI=1 EVG_VARIANT=ubuntu2204 go run build.go build
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+    CI=1 EVG_VARIANT=ubuntu2204 go run build.go build; \
+    elif [ "$TARGETARCH" = "arm64" ]; then \
+    CI=1 EVG_VARIANT=ubuntu2204-arm64 go run build.go build; \
+    else \
+    echo "Unsupported architecture: $TARGETARCH"; \
+    exit 1; \
+    fi

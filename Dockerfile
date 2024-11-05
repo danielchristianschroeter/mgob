@@ -19,15 +19,8 @@ ARG TARGETOS
 ARG TARGETARCH
 COPY . /go/src/github.com/stefanprodan/mgob
 WORKDIR /go/src/github.com/stefanprodan/mgob
-
-# Run tests only for the native architecture
-RUN if [ "$TARGETARCH" = "$(go env GOARCH)" ]; then \
-    go test ./pkg/...; \
-    fi
-
-# Build for the target architecture
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
-    go build -ldflags "-X main.version=${VERSION}" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test ./pkg/... && \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
 FROM --platform=$BUILDPLATFORM alpine:3.18
 ARG BUILD_DATE

@@ -1,14 +1,12 @@
-# Use an Ubuntu base image with a specified platform
+# Stage 1: Build MongoDB tools on Ubuntu
 FROM --platform=$BUILDPLATFORM ubuntu:22.04 AS mongo-tools-builder
 
-# Set the MongoDB tools version as a build argument
+# Set MongoDB tools version as a build argument
 ARG MONGODB_TOOLS_VERSION=100.8.0
-
-# Set build architecture and OS
 ARG TARGETOS
 ARG TARGETARCH
 
-# Install dependencies for building MongoDB tools and Go
+# Install build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
@@ -18,31 +16,44 @@ RUN apt-get update && \
     ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Set the Go environment variables
-ENV GOPATH=/go PATH=$GOPATH/bin:/usr/local/go/bin:$PATH \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH}
+# Set environment variables for Go
+ENV GOPATH=/go
+ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 
 # Clone the MongoDB tools repository
 RUN git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_TOOLS_VERSION /go/mongo-tools
 
-# Set the working directory
+# Set working directory
 WORKDIR /go/mongo-tools
 
-# Conditionally build MongoDB tools based on architecture
-RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    TOOLS="bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop"; \
-    for tool in $TOOLS; do \
-    go build -o bin/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl gssapi failpoints" $tool/main/$tool.go; \
-    done; \
+# List of MongoDB tools to build
+ENV TOOLS="bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop"
+
+# Conditionally build tools for each architecture
+RUN for tool in $TOOLS; do \
+    if [ "$TARGETARCH" = "amd64" ]; then \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /build/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl gssapi failpoints" $tool/main/$tool.go; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-    TOOLS="bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop"; \
-    for tool in $TOOLS; do \
-    go build -o bin/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl failpoints" $tool/main/$tool.go; \
-    done; \
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /build/$tool -ldflags "-X main.VersionStr=$MONGODB_TOOLS_VERSION -X main.GitCommit=$(git rev-parse HEAD)" -tags "ssl sasl failpoints" $tool/main/$tool.go; \
     else \
     echo "Unsupported architecture: $TARGETARCH"; \
     exit 1; \
-    fi && \
-    apt-get remove -y golang-go git build-essential && \
-    apt-get autoremove -y && \
-    rm -rf /go/pkg /var/lib/apt/lists/*
+    fi; \
+    done
+
+# Stage 2: Create the final lightweight image with MongoDB tools
+FROM alpine:3.18
+
+# Install only necessary libraries for MongoDB tools to run
+RUN apk add --no-cache \
+    libc6-compat \
+    krb5-libs \
+    ca-certificates
+
+# Copy the MongoDB tools from the build stage
+COPY --from=mongo-tools-builder /build/* /usr/bin/
+
+# Verify the installation by displaying the version of each tool
+RUN for tool in bsondump mongoimport mongoexport mongodump mongorestore mongostat mongofiles mongotop; do \
+    /usr/bin/$tool --version || echo "$tool not found"; \
+    done

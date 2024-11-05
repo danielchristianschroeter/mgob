@@ -15,10 +15,12 @@ FROM --platform=$BUILDPLATFORM danielschroeter/mongo-tool:${MONGODB_TOOLS_VERSIO
 
 FROM --platform=$BUILDPLATFORM golang:1.21 AS mgob-builder
 ARG VERSION
+ARG TARGETOS
+ARG TARGETARCH
 COPY . /go/src/github.com/stefanprodan/mgob
 WORKDIR /go/src/github.com/stefanprodan/mgob
-RUN CGO_ENABLED=0 GOOS=linux go test ./pkg/... && \
-    CGO_ENABLED=0 GOOS=linux go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go test ./pkg/... && \
+    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags "-X main.version=$VERSION" -a -installsuffix cgo -o mgob github.com/stefanprodan/mgob/cmd/mgob
 
 FROM --platform=$BUILDPLATFORM alpine:3.18
 ARG BUILD_DATE

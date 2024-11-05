@@ -39,9 +39,9 @@ WORKDIR /go/mongo-tools
 
 # Build MongoDB tools
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-    CI=1 EVG_VARIANT=ubuntu2204 go run build.go build; \
+    CI=1 EVG_VARIANT=ubuntu2204 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go run build.go build; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-    CI=1 EVG_VARIANT=ubuntu2204-arm64 go run build.go build; \
+    CI=1 EVG_VARIANT=ubuntu2204-arm64 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go run build.go build; \
     else \
     echo "Unsupported architecture: $TARGETARCH"; \
     exit 1; \

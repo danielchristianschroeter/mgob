@@ -9,4 +9,4 @@ RUN apk add --no-cache git build-base krb5-dev libc-dev gcc musl-dev && \
 
 WORKDIR /go/mongo-tools
 
-RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH ./make build
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH ./make build

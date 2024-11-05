@@ -37,4 +37,4 @@ RUN git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_T
 WORKDIR /go/mongo-tools
 
 # Build MongoDB tools
-RUN GOOS=$TARGETOS GOARCH=$TARGETARCH go run build.go build
+RUN go run build.go build

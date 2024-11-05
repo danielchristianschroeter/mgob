@@ -4,7 +4,6 @@ ARG MONGODB_TOOLS_VERSION=100.8.0
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN apk add --no-cache git build-base krb5-dev
 RUN apk add --no-cache git build-base krb5-dev libc-dev gcc musl-dev && \
     git clone https://github.com/mongodb/mongo-tools.git --depth 1 -b $MONGODB_TOOLS_VERSION
 

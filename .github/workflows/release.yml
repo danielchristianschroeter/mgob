@@ -30,6 +30,9 @@ jobs:
     strategy:
       matrix:
         feature: [aws, azure, gcloud, minio, rclone]
+        platform:
+          - linux/amd64
+          - linux/arm64
         include:
           - feature: aws
             arg: EN_AWS_CLI=true
@@ -63,7 +66,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             danielschroeter/mgob:${{ needs.set-build-env.outputs.buildId }}-${{ matrix.feature }}
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
           build-args: |
             BUILDKIT_MULTI_PLATFORM=1
             BUILD_DATE=${{ needs.set-build-env.outputs.now }}

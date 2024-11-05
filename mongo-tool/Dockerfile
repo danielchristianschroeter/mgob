@@ -13,7 +13,7 @@ ENV GOCACHE="/go-cache" \
 
 # Install dependencies and clone the repository
 RUN apk add --no-cache git build-base krb5-dev && \
-    git clone https://github.com/mongodb/mongo-tools.git /src/mongo-tools --branch v$MONGODB_TOOLS_VERSION --depth 1
+    git clone https://github.com/mongodb/mongo-tools.git /src/mongo-tools --branch $MONGODB_TOOLS_VERSION --depth 1
 
 WORKDIR /src/mongo-tools
 

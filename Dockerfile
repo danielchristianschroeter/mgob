@@ -79,6 +79,7 @@ RUN if [ "${MGOB_EN_GCLOUD}" = "true" ]; then \
 
 # Copy the mgob binary from the builder
 COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob /usr/local/bin/
+RUN chmod +x /usr/local/bin/mgob
 
 # Copy MongoDB tools from the tools-builder
 COPY --from=tools-builder /usr/local/bin/ /usr/bin/
@@ -101,4 +102,4 @@ LABEL org.label-schema.build-date=${BUILD_DATE} \
     org.label-schema.schema-version="1.0"
 
 # Entry point for the mgob application
-ENTRYPOINT [ "./mgob" ]
+ENTRYPOINT [ "/usr/local/bin/mgob" ]

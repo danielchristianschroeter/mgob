@@ -62,11 +62,11 @@ install_rclone() {
 install_gcloud() {
   echo "Installing Google Cloud SDK..."
 
-  # Remove the general Python from the default environment before installing specific Python
+  # Adjustments for Alpine version syntax and remove current Python
   apk del python3 py3-pip
 
   # Install Python 3.11 specifically for Google Cloud
-  apk add --no-cache python3=3.11* py3-pip=22.0*
+  apk add --no-cache 'python3~=3.11' 'py3-pip~=22'
 
   # Create and activate a virtual environment specifically for Google Cloud SDK
   python3 -m venv /opt/gcloud-venv

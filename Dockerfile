@@ -74,7 +74,9 @@ RUN chmod +x /tmp/build.sh && /tmp/build.sh
 
 # Set the PATH for Google Cloud SDK if enabled
 RUN if [ "${MGOB_EN_GCLOUD}" = "true" ]; then \
-    echo 'export PATH="/google-cloud-sdk/bin:$PATH"' >> /etc/profile.d/gcloud.sh; \
+    echo 'export PATH="/google-cloud-sdk/bin:${PATH}"' > /etc/profile.d/gcloud.sh; \
+    chmod +x /etc/profile.d/gcloud.sh; \
+    source /etc/profile.d/gcloud.sh; \
     fi
 
 # Copy the mgob binary from the builder

@@ -34,7 +34,7 @@ fi
 cd /tmp
 
 # Ensure Python and general Python tools are installed
-apk add --no-cache python3 py3-pip
+apk add --no-cache 'python3=~3.11' py3-pip
 
 # Create and activate a virtual environment for general Python usage
 python3 -m venv /opt/venv

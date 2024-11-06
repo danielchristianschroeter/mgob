@@ -21,7 +21,7 @@ s3:
   secretKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
   api: "S3v4"
 gcloud:
-  bucket: "maxisam-mgob"
+  bucket: "danielschroeter-mgob-test"
   keyFilePath: "/config/gcloud.json"
 # azure:
 #   containerName: "mgob"

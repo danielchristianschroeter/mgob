@@ -80,7 +80,6 @@ install_gcloud() {
   /google-cloud-sdk/bin/gcloud config set core/disable_usage_reporting true
   /google-cloud-sdk/bin/gcloud config set component_manager/disable_update_check true
   /google-cloud-sdk/bin/gcloud config set metrics/environment github_docker_image
-  /google-cloud-sdk/bin/gcloud --version
 
   # Deactivate the gcloud virtual environment
   deactivate

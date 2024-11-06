@@ -28,7 +28,7 @@ apk add --no-cache ca-certificates tzdata bash curl krb5-dev
 
 # Install GnuPG conditionally
 if [ "${MGOB_EN_GPG}" = "true" ]; then
-  apk add --no-cache gnupg="${GNUPG_VERSION}"
+  apk add --no-cache gnupg
 fi
 
 cd /tmp
@@ -38,7 +38,7 @@ apk add --no-cache python3 py3-pip
 
 # Create and activate a virtual environment for general Python usage
 python3 -m venv /opt/venv
-. /opt/venv/bin/activate
+source /opt/venv/bin/activate
 
 # Install MinIO client if enabled
 install_minio() {
@@ -61,18 +61,12 @@ install_rclone() {
 # Install Google Cloud SDK if enabled
 install_gcloud() {
   echo "Installing Google Cloud SDK..."
-
-  # Adjustments for Alpine version syntax and remove current Python
-  apk del python3 py3-pip
-
-  # Install Python 3.11 specifically for Google Cloud
-  apk add --no-cache 'python3~=3.11' 'py3-pip~=22'
-
-  # Create and activate a virtual environment specifically for Google Cloud SDK
-  python3 -m venv /opt/gcloud-venv
-  . /opt/gcloud-venv/bin/activate
   
-  # Upgrade pip and install Google Cloud SDK dependencies
+  # Create and activate a virtual environment for Google Cloud SDK
+  python3 -m venv /opt/gcloud-venv
+  source /opt/gcloud-venv/bin/activate
+
+  # Install dependencies for Google Cloud SDK
   pip install --no-cache-dir --upgrade pip wheel crcmod
 
   # Download and extract Google Cloud SDK
@@ -88,7 +82,7 @@ install_gcloud() {
   /google-cloud-sdk/bin/gcloud config set metrics/environment github_docker_image
   /google-cloud-sdk/bin/gcloud --version
 
-  # Deactivate the Google Cloud virtual environment
+  # Deactivate the gcloud virtual environment
   deactivate
 }
 
@@ -99,10 +93,11 @@ install_cli_tools() {
   # Install build dependencies
   apk add --no-cache --virtual .build-deps gcc libffi-dev musl-dev openssl-dev python3-dev make
 
-  # Activate the general virtual environment
-  . /opt/venv/bin/activate
+  # Activate the general-purpose virtual environment
+  source /opt/venv/bin/activate
 
   # Install CLI tools within the virtual environment
+
   # Azure CLI
   if [ "${MGOB_EN_AZURE}" = "true" ]; then
     echo "Installing Azure CLI..."
@@ -117,7 +112,7 @@ install_cli_tools() {
     ln -s /opt/venv/bin/aws /usr/bin/aws
   fi
 
-  # Deactivate the general virtual environment
+  # Deactivate the general-purpose virtual environment
   deactivate
 
   # Remove build dependencies

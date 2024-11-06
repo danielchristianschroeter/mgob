@@ -102,7 +102,9 @@ install_cli_tools() {
     echo "Installing Azure CLI..."
     pip install --no-cache-dir "azure-cli==${AZURE_CLI_VERSION}"
     ln -s /opt/venv/bin/az /usr/bin/az
+    /usr/bin/az config set auto-upgrade.enable=no
     /usr/bin/az config set auto-upgrade.prompt=no
+    /usr/bin/az config set core.survey_message=false
   fi
 
   # AWS CLI

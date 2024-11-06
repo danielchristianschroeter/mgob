@@ -36,6 +36,10 @@ cd /tmp
 # Ensure Python and pip are installed before running pip-specific commands
 apk add --no-cache python3 py3-pip
 
+# Create and activate a virtual environment
+python3 -m venv /opt/venv
+. /opt/venv/bin/activate
+
 # Install MinIO client if enabled
 install_minio() {
   echo "Installing MinIO Client..."
@@ -57,14 +61,22 @@ install_rclone() {
 # Install Google Cloud SDK if enabled
 install_gcloud() {
   echo "Installing Google Cloud SDK..."
-  apk add --no-cache python3 py3-pip libc6-compat openssh-client git
-  pip3 install --no-cache-dir --upgrade pip
-  pip3 install --no-cache-dir wheel crcmod
 
+  # Install required packages
+  apk add --no-cache python3 py3-pip libc6-compat openssh-client git
+
+  # Activate the virtual environment before installing Python packages
+  python3 -m venv /opt/venv
+  . /opt/venv/bin/activate
+  
+  # Upgrade pip inside the virtual environment
+  pip install --no-cache-dir --upgrade pip wheel crcmod
+
+  # Download and extract Google Cloud SDK
   curl -LO "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${GCLOUD_ARCH_SUFFIX}.tar.gz"
   tar -xzf "google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${GCLOUD_ARCH_SUFFIX}.tar.gz" -C /
   rm "google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-${GCLOUD_ARCH_SUFFIX}.tar.gz"
-  
+
   ln -s /lib /lib64 || true  # Some tools expect /lib64
 
   # Configure gcloud
@@ -72,6 +84,9 @@ install_gcloud() {
   /google-cloud-sdk/bin/gcloud config set component_manager/disable_update_check true
   /google-cloud-sdk/bin/gcloud config set metrics/environment github_docker_image
   /google-cloud-sdk/bin/gcloud --version
+
+  # Deactivate the virtual environment after installation
+  deactivate
 }
 
 # Install Azure CLI and AWS CLI if enabled
@@ -81,35 +96,28 @@ install_cli_tools() {
   # Install build dependencies
   apk add --no-cache --virtual .build-deps gcc libffi-dev musl-dev openssl-dev python3-dev make
 
-  # Install virtualenv
-  pip3 install --no-cache-dir virtualenv
+  # Activate the virtual environment
+  . /opt/venv/bin/activate
 
-  # Create a virtual environment for CLI tools
-  VENV_DIR="/opt/mgob-venv"
-  virtualenv "${VENV_DIR}"
-  . "${VENV_DIR}/bin/activate"
-
-  # Upgrade pip inside the virtual environment
-  pip install --no-cache-dir --upgrade pip wheel
-
-  # Install Azure CLI if enabled
+  # Install CLI tools within the virtual environment
+  # Azure CLI
   if [ "${MGOB_EN_AZURE}" = "true" ]; then
     echo "Installing Azure CLI..."
     pip install --no-cache-dir "azure-cli==${AZURE_CLI_VERSION}"
-    # Symlink the az binary
-    ln -s "${VENV_DIR}/bin/az" /usr/bin/az
+    ln -s /opt/venv/bin/az /usr/bin/az
   fi
 
-  # Install AWS CLI if enabled
+  # AWS CLI
   if [ "${MGOB_EN_AWS_CLI}" = "true" ]; then
     echo "Installing AWS CLI..."
     pip install --no-cache-dir "awscli==${AWS_CLI_VERSION}"
-    # Symlink the aws binary
-    ln -s "${VENV_DIR}/bin/aws" /usr/bin/aws
+    ln -s /opt/venv/bin/aws /usr/bin/aws
   fi
 
-  # Deactivate and remove build dependencies
+  # Deactivate the virtual environment
   deactivate
+
+  # Remove build dependencies
   apk del .build-deps
 }
 

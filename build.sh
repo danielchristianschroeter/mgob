@@ -62,8 +62,8 @@ install_rclone() {
 install_gcloud() {
   echo "Installing Google Cloud SDK..."
 
-  # Install required packages
-  apk add --no-cache python3 py3-pip libc6-compat openssh-client git
+  # Install specific Python 3.11 package
+  apk add --no-cache python3=~3.11 py3-pip=~22 libc6-compat openssh-client git
 
   # Activate the virtual environment before installing Python packages
   python3 -m venv /opt/venv

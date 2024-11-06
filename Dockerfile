@@ -36,7 +36,7 @@ RUN go test ./pkg/... && \
     go build -ldflags "-X main.version=$VERSION" -o mgob ./cmd/mgob
 
 # Stage 3: final image setup with Alpine
-FROM alpine:3.20
+FROM alpine:3.18
 
 # Define build arguments
 ARG BUILD_DATE

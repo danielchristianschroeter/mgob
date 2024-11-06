@@ -88,8 +88,7 @@ jobs:
             EN_RCLONE=true
             EN_GPG=true
           tags: danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
-          push: false
-          load: true
+          push: true
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev
           cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev,mode=max
 
@@ -110,8 +109,7 @@ jobs:
             EN_RCLONE=true
             EN_GPG=true
           tags: danielschroeter/mgob:${{ env.APP_VERSION }}.${{ github.run_number }}
-          push: false
-          load: true
+          push: true
           cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/mgob:buildcache-dev
 
       - name: Setup key

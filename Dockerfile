@@ -73,7 +73,7 @@ WORKDIR /
 
 # Copy and run the build script
 COPY build.sh /tmp/
-RUN chmod +x /tmp/build.sh && /tmp/build.sh && rm /tmp/build.sh
+RUN chmod +x /tmp/build.sh && /tmp/build.sh
 
 # Set the PATH for Google Cloud SDK if enabled
 RUN if [ "${MGOB_EN_GCLOUD}" = "true" ]; then \

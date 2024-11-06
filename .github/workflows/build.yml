@@ -149,10 +149,9 @@ jobs:
 
       - name: Check Mgob container logs for startup errors
         run: |
-          errors=$(docker logs mgob 2>&1 | grep -i "error")
-          if [ -n "$errors" ]; then
+          if docker logs mgob 2>&1 | grep -iq "error"; then
             echo "Error found in Mgob startup logs!"
-            echo "$errors"
+            docker logs mgob
             exit 1
           fi
           echo "No errors in Mgob startup logs."

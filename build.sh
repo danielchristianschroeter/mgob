@@ -33,10 +33,10 @@ fi
 
 cd /tmp
 
-# Ensure Python and pip are installed before running pip-specific commands
+# Ensure Python and general Python tools are installed
 apk add --no-cache python3 py3-pip
 
-# Create and activate a virtual environment
+# Create and activate a virtual environment for general Python usage
 python3 -m venv /opt/venv
 . /opt/venv/bin/activate
 
@@ -62,14 +62,17 @@ install_rclone() {
 install_gcloud() {
   echo "Installing Google Cloud SDK..."
 
-  # Install specific Python 3.11 package
-  apk add --no-cache python3=~3.11 py3-pip=~22 libc6-compat openssh-client git
+  # Remove the general Python from the default environment before installing specific Python
+  apk del python3 py3-pip
 
-  # Activate the virtual environment before installing Python packages
-  python3 -m venv /opt/venv
-  . /opt/venv/bin/activate
+  # Install Python 3.11 specifically for Google Cloud
+  apk add --no-cache python3=3.11* py3-pip=22.0*
+
+  # Create and activate a virtual environment specifically for Google Cloud SDK
+  python3 -m venv /opt/gcloud-venv
+  . /opt/gcloud-venv/bin/activate
   
-  # Upgrade pip inside the virtual environment
+  # Upgrade pip and install Google Cloud SDK dependencies
   pip install --no-cache-dir --upgrade pip wheel crcmod
 
   # Download and extract Google Cloud SDK
@@ -85,7 +88,7 @@ install_gcloud() {
   /google-cloud-sdk/bin/gcloud config set metrics/environment github_docker_image
   /google-cloud-sdk/bin/gcloud --version
 
-  # Deactivate the virtual environment after installation
+  # Deactivate the Google Cloud virtual environment
   deactivate
 }
 
@@ -96,7 +99,7 @@ install_cli_tools() {
   # Install build dependencies
   apk add --no-cache --virtual .build-deps gcc libffi-dev musl-dev openssl-dev python3-dev make
 
-  # Activate the virtual environment
+  # Activate the general virtual environment
   . /opt/venv/bin/activate
 
   # Install CLI tools within the virtual environment
@@ -114,7 +117,7 @@ install_cli_tools() {
     ln -s /opt/venv/bin/aws /usr/bin/aws
   fi
 
-  # Deactivate the virtual environment
+  # Deactivate the general virtual environment
   deactivate
 
   # Remove build dependencies

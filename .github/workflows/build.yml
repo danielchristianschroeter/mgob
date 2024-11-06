@@ -140,36 +140,37 @@ jobs:
 
       - name: Verify Mgob container is running
         run: |
-          # Check if Mgob container is running
-          if [ "$(docker inspect -f '{{.State.Running}}' mgob)" != "true" ]; then
+          if [ "$(docker inspect -f '{{.State.Status}}' mgob)" != "running" ]; then
             echo "Mgob container is not running!"
             docker logs mgob
             exit 1
           fi
           echo "Mgob container is running."
 
-      - name: Check Mgob container logs for startup errors
-        run: |
-          # Check the logs for any errors
-          if docker logs mgob 2>&1 | grep -i "error"; then
-            echo "Error found in Mgob startup logs!"
-            docker logs mgob
-            exit 1
-          fi
-          echo "No errors in Mgob startup logs."
+          - name: Check Mgob container logs for startup errors
+          run: |
+            errors=$(docker logs mgob 2>&1 | grep -i "error")
+            if [ -n "$errors" ]; then
+              echo "Error found in Mgob startup logs!"
+              echo "$errors"
+              exit 1
+            fi
+            echo "No errors in Mgob startup logs."
 
       - name: Wait for Mgob service to be ready
         run: |
-          # Wait for Mgob to be fully ready
           echo 'Waiting for Mgob to be ready...'
           for i in {1..10}; do
-            if curl -s http://127.0.0.1:8090/version; then
+            if curl -s http://127.0.0.1:8090/version -o /dev/null; then
               echo "Mgob is ready!"
               break
-            else
-              echo "Mgob not ready, retrying in 5 seconds..."
-              sleep 5
+            elif [ "$i" -eq "10" ]; then
+              echo "Mgob not ready after multiple attempts."
+              docker logs mgob
+              exit 1
             fi
+            echo "Waiting for Mgob... retrying in 5 seconds"
+            sleep 5
           done
           echo 'Mgob service is available.'
 

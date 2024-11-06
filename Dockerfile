@@ -72,11 +72,8 @@ WORKDIR /
 COPY build.sh /tmp/
 RUN chmod +x /tmp/build.sh && /tmp/build.sh
 
-# Set the PATH for Google Cloud SDK if enabled
-RUN if [ "${MGOB_EN_GCLOUD}" = "true" ]; then \
-    export PATH="/google-cloud-sdk/bin:$PATH"; \
-    gcloud --version; \
-    fi
+# Set the PATH for Google Cloud SDK
+ENV PATH="/google-cloud-sdk/bin:${PATH}"
 
 # Copy the mgob binary from the builder
 COPY --from=mgob-builder /go/src/github.com/stefanprodan/mgob/mgob /usr/local/bin/

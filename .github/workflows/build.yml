@@ -147,15 +147,15 @@ jobs:
           fi
           echo "Mgob container is running."
 
-          - name: Check Mgob container logs for startup errors
-          run: |
-            errors=$(docker logs mgob 2>&1 | grep -i "error")
-            if [ -n "$errors" ]; then
-              echo "Error found in Mgob startup logs!"
-              echo "$errors"
-              exit 1
-            fi
-            echo "No errors in Mgob startup logs."
+      - name: Check Mgob container logs for startup errors
+        run: |
+          errors=$(docker logs mgob 2>&1 | grep -i "error")
+          if [ -n "$errors" ]; then
+            echo "Error found in Mgob startup logs!"
+            echo "$errors"
+            exit 1
+          fi
+          echo "No errors in Mgob startup logs."
 
       - name: Wait for Mgob service to be ready
         run: |
